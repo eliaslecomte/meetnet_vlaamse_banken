@@ -123,3 +123,19 @@ class MeetnetDataUpdateCoordinator(DataUpdateCoordinator[dict[str, DataValue]]):
         if self._catalog and parameter_id in self._catalog.parameters:
             return self._catalog.parameters[parameter_id].unit
         return None
+
+    def get_parameter(self, parameter_id: str):
+        """Get a parameter by ID."""
+        if self._catalog and parameter_id in self._catalog.parameters:
+            return self._catalog.parameters[parameter_id]
+        return None
+
+    def get_available_data_by_id(self, data_id: str) -> AvailableData | None:
+        """Get available data entry by ID."""
+        if self._catalog is None:
+            return None
+
+        for ad in self._catalog.available_data:
+            if ad.id == data_id:
+                return ad
+        return None

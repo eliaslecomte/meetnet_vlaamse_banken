@@ -24,7 +24,7 @@ You need API credentials for the Meetnet Vlaamse Banken API. You can request acc
 2. Click on "Integrations"
 3. Click the three dots in the top right corner
 4. Select "Custom repositories"
-5. Add this repository URL: `https://github.com/eliaslecomte/meetnet-vlaamse-banken-ha`
+5. Add this repository URL: `https://github.com/eliaslecomte/meetnet_vlaamse_banken`
 6. Select "Integration" as the category
 7. Click "Add"
 8. Search for "Meetnet Vlaamse Banken" and install it

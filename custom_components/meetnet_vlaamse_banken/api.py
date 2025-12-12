@@ -1,11 +1,14 @@
-"""API client for Meetnet Vlaamse Banken."""
+"""API client for Meetnet Vlaamse Banken.
+
+API Documentation: See docs/API_SCHEMA.md for full schema details.
+"""
 
 from __future__ import annotations
 
-import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 import logging
+import re
 from typing import Any
 
 import aiohttp
@@ -13,6 +16,10 @@ import aiohttp
 from .const import API_BASE_URL, API_CATALOG_URL, API_CURRENT_DATA_URL, API_TOKEN_URL
 
 _LOGGER = logging.getLogger(__name__)
+
+# Default language for extracting names from MessageModelList
+DEFAULT_LANGUAGE = "en"
+FALLBACK_LANGUAGE = "nl"
 
 
 class MeetnetApiError(Exception):
@@ -27,34 +34,66 @@ class MeetnetConnectionError(MeetnetApiError):
     """Connection error."""
 
 
+def extract_message(message_list: list[dict[str, str]] | None, default: str = "") -> str:
+    """Extract a message from a MessageModelList.
+
+    MessageModelList format: [{"Culture": "nl", "Message": "Dutch"}, {"Culture": "en", "Message": "English"}]
+    """
+    if not message_list:
+        return default
+
+    if not isinstance(message_list, list):
+        # If it's already a string, return it
+        if isinstance(message_list, str):
+            return message_list
+        return default
+
+    # Try preferred language first
+    for item in message_list:
+        if isinstance(item, dict) and item.get("Culture") == DEFAULT_LANGUAGE:
+            return item.get("Message", default)
+
+    # Try fallback language
+    for item in message_list:
+        if isinstance(item, dict) and item.get("Culture") == FALLBACK_LANGUAGE:
+            return item.get("Message", default)
+
+    # Return first available message
+    for item in message_list:
+        if isinstance(item, dict) and "Message" in item:
+            return item.get("Message", default)
+
+    return default
+
+
 @dataclass
 class Location:
     """Represents a monitoring location."""
 
-    id: str
+    id: str  # LocationKey: 3 alphanumeric chars (e.g., "NPT")
     name: str
     description: str | None = None
-    latitude: float | None = None
-    longitude: float | None = None
+    position_wkt: str | None = None  # WKT format position
 
 
 @dataclass
 class Parameter:
     """Represents a measurement parameter."""
 
-    id: str
+    id: str  # ParameterKey: 3 alphanumeric chars (e.g., "WVC")
     name: str
     unit: str | None = None
-    interval_minutes: int | None = None
+    parameter_type_id: int | None = None
 
 
 @dataclass
 class AvailableData:
     """Represents an available data combination (location + parameter)."""
 
-    id: str
-    location_id: str
-    parameter_id: str
+    id: str  # LocationParameterKey: 6 alphanumeric chars (e.g., "NPTWVC")
+    location_id: str  # LocationKey
+    parameter_id: str  # ParameterKey
+    current_interval: int | None = None  # Interval in minutes
 
 
 @dataclass
@@ -70,12 +109,9 @@ class Catalog:
 class DataValue:
     """Represents a current data value."""
 
-    data_id: str
-    location_id: str
-    parameter_id: str
+    id: str  # LocationParameterKey
     value: float | None
     timestamp: datetime | None
-    unit: str | None = None
 
 
 class MeetnetApiClient:
@@ -197,7 +233,13 @@ class MeetnetApiClient:
             return False
 
     async def get_catalog(self, force_refresh: bool = False) -> Catalog:
-        """Get the catalog with locations, parameters, and available data."""
+        """Get the catalog with locations, parameters, and available data.
+
+        API Response structure (see docs/API_SCHEMA.md):
+        - Locations[]: ID, Name (MessageModelList), Description (MessageModelList), PositionWKT
+        - Parameters[]: ID, Name (MessageModelList), Unit, ParameterTypeID
+        - AvailableData[]: ID, Location, Parameter, CurrentInterval
+        """
         if self._catalog is not None and not force_refresh:
             return self._catalog
 
@@ -209,10 +251,9 @@ class MeetnetApiClient:
             loc_id = loc.get("ID", "")
             locations[loc_id] = Location(
                 id=loc_id,
-                name=loc.get("Name", loc_id),
-                description=loc.get("Description"),
-                latitude=loc.get("Latitude"),
-                longitude=loc.get("Longitude"),
+                name=extract_message(loc.get("Name"), loc_id),
+                description=extract_message(loc.get("Description")),
+                position_wkt=loc.get("PositionWKT"),
             )
 
         # Parse parameters
@@ -221,19 +262,21 @@ class MeetnetApiClient:
             param_id = param.get("ID", "")
             parameters[param_id] = Parameter(
                 id=param_id,
-                name=param.get("Name", param_id),
+                name=extract_message(param.get("Name"), param_id),
                 unit=param.get("Unit"),
-                interval_minutes=param.get("CurrentInterval"),
+                parameter_type_id=param.get("ParameterTypeID"),
             )
 
         # Parse available data combinations
+        # Note: Field names are "Location" and "Parameter", not "LocationID" and "ParameterID"
         available_data: list[AvailableData] = []
         for ad in data.get("AvailableData", []):
             available_data.append(
                 AvailableData(
                     id=ad.get("ID", ""),
-                    location_id=ad.get("LocationID", ""),
-                    parameter_id=ad.get("ParameterID", ""),
+                    location_id=ad.get("Location", ""),
+                    parameter_id=ad.get("Parameter", ""),
+                    current_interval=ad.get("CurrentInterval"),
                 )
             )
 
@@ -257,11 +300,14 @@ class MeetnetApiClient:
     ) -> dict[str, DataValue]:
         """Get current data values.
 
+        API Response structure (see docs/API_SCHEMA.md):
+        - Values[]: ID (LocationParameterKey), Timestamp, Value
+
         Args:
-            data_ids: Optional list of data IDs to filter. If None, returns all.
+            data_ids: Optional list of LocationParameterKeys to filter. If None, returns all.
 
         Returns:
-            Dictionary mapping data ID to DataValue.
+            Dictionary mapping LocationParameterKey to DataValue.
         """
         url = API_CURRENT_DATA_URL
         if data_ids:
@@ -284,12 +330,9 @@ class MeetnetApiClient:
                     _LOGGER.warning("Could not parse timestamp: %s", timestamp_str)
 
             result[data_id] = DataValue(
-                data_id=data_id,
-                location_id=item.get("LocationID", ""),
-                parameter_id=item.get("ParameterID", ""),
+                id=data_id,
                 value=float(value) if value is not None else None,
                 timestamp=timestamp,
-                unit=item.get("Unit"),
             )
 
         return result
