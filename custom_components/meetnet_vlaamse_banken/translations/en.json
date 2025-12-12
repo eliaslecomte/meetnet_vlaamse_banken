@@ -1,0 +1,57 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Meetnet Vlaamse Banken",
+        "description": "Enter your Meetnet Vlaamse Banken API credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      },
+      "locations": {
+        "title": "Select Locations",
+        "description": "Select the monitoring locations you want to track. Found {location_count} available locations.",
+        "data": {
+          "locations": "Locations"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate",
+        "description": "Your credentials have expired. Please enter your new credentials.",
+        "data": {
+          "username": "Username",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid username or password",
+      "cannot_connect": "Unable to connect to the Meetnet API",
+      "unknown": "An unexpected error occurred",
+      "no_locations_selected": "Please select at least one location"
+    },
+    "abort": {
+      "already_configured": "This account is already configured",
+      "reauth_successful": "Reauthentication successful"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure Locations",
+        "description": "Select the monitoring locations you want to track.",
+        "data": {
+          "locations": "Locations"
+        }
+      }
+    },
+    "error": {
+      "no_locations_selected": "Please select at least one location"
+    },
+    "abort": {
+      "not_set_up": "Integration is not set up",
+      "cannot_connect": "Unable to connect to the Meetnet API"
+    }
+  }
+}
