@@ -317,8 +317,11 @@ class MeetnetApiClient:
 
         data = await self._api_request(url)
 
+        # API returns array directly, not wrapped in {"Values": [...]}
+        values = data if isinstance(data, list) else data.get("Values", [])
+
         result: dict[str, DataValue] = {}
-        for item in data.get("Values", []):
+        for item in values:
             data_id = item.get("ID", "")
             value = item.get("Value")
             timestamp_str = item.get("Timestamp")

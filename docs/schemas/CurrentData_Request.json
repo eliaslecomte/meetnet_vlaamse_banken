@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "currentData Request",
+  "description": "Describing the optional request for /V2/currentData",
+  "type": ["object", "null"],
+  "properties": {
+    "IDs": {
+      "type": "array",
+      "items": { "$ref": "Commons.json#/definitions/LocationParameterKey" }
+    }
+  },
+  "required": ["IDs"]
+}

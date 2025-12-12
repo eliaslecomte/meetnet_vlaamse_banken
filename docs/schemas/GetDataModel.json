@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "GetDataResponse",
+  "description": "Describing the response from /V2/GetData",
+  "definitions": {
+    "LPData": {
+      "type": "object",
+      "properties": {
+        "ID": { "$ref": "Commons.json#/definitions/LocationParameterKey" },
+        "StartTime": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "EndTime": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "MinValue": {
+          "type": ["number", "null"]
+        },
+        "MaxValue": {
+          "type": ["number", "null"]
+        },
+        "Values": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/LPDataItem" }
+        }
+      },
+      "required": ["ID", "StartTime", "EndTime", "MinValue", "MaxValue", "Values"]
+    },
+    "LPDataItem": {
+      "type": "object",
+      "properties": {
+        "Timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Value": {
+          "type": "number"
+        }
+      },
+      "required": ["Timestamp", "Value"]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "StartTime": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "EndTime": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "Intervals": {
+      "type": ["array", "null"],
+      "items": { "type": "integer" }
+    },
+    "Values": {
+      "type": ["array", "null"],
+      "items": { "$ref": "#/definitions/LPData" }
+    }
+  },
+  "required": ["StartTime", "EndTime", "Intervals", "Values"]
+}

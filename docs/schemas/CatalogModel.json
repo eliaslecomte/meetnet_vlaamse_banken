@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Catalog",
+  "description": "Describing the Catalog from /V2/Catalog.",
+  "definitions": {
+    "LocationParameterModel": {
+      "type": "object",
+      "properties": {
+        "ID": { "$ref": "Commons.json#/definitions/LocationParameterKey" },
+        "Location": { "$ref": "Commons.json#/definitions/LocationKey" },
+        "Parameter": { "$ref": "Commons.json#/definitions/ParameterKey" },
+        "CurrentInterval": { "type": "integer" },
+        "Publications": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["ID", "Location", "Parameter", "CurrentInterval", "Publications"]
+    },
+    "MessageModel": {
+      "type": "object",
+      "properties": {
+        "Culture": { "type": "string" },
+        "Message": { "type": "string" }
+      },
+      "required": ["Culture", "Message"]
+    },
+    "MessageModelList": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/MessageModel" }
+    },
+    "ParameterTypeModel": {
+      "type": "object",
+      "properties": {
+        "ID": { "type": "integer" },
+        "SortOrder": { "type": "integer" },
+        "Name": { "$ref": "#/definitions/MessageModelList" }
+      },
+      "required": ["ID", "SortOrder", "Name"]
+    },
+    "ParameterModel": {
+      "type": "object",
+      "properties": {
+        "ID": { "$ref": "Commons.json#/definitions/ParameterKey" },
+        "Name": { "$ref": "#/definitions/MessageModelList" },
+        "Unit": { "type": "string" },
+        "ParameterTypeID": { "$ref": "Commons.json#/definitions/ParameterTypeKey" },
+        "MaxValue": {
+          "description": "obsolete",
+          "type": ["number", "null"]
+        },
+        "MinValue": {
+          "description": "obsolete",
+          "type": ["number", "null"]
+        }
+      },
+      "required": ["ID", "Name", "Unit", "ParameterTypeID"]
+    },
+    "LocationModel": {
+      "type": "object",
+      "properties": {
+        "ID": { "$ref": "Commons.json#/definitions/LocationKey" },
+        "Name": { "$ref": "#/definitions/MessageModelList" },
+        "Description": { "$ref": "#/definitions/MessageModelList" },
+        "PositionWKT": { "type": "string" }
+      },
+      "required": ["ID", "Name", "PositionWKT"]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "Customer": { "$ref": "Commons.json#/definitions/CustomerModel" },
+    "Locations": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/LocationModel" }
+    },
+    "Parameters": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/ParameterModel" }
+    },
+    "ParameterTypes": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/ParameterTypeModel" }
+    },
+    "AvailableData": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/LocationParameterModel" }
+    },
+    "ProjectionWKT": { "type": "string" }
+  },
+  "required": ["Customer", "Locations", "Parameters", "ParameterTypes", "AvailableData", "ProjectionWKT"]
+}

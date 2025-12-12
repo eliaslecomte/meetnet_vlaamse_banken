@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "CurrentData",
+  "description": "Describing the response from /V2/currentData. Returns an ARRAY directly, not an object.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ID": { "$ref": "Commons.json#/definitions/LocationParameterKey" },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "Value": {
+        "type": ["number", "null"]
+      }
+    },
+    "required": ["ID", "Timestamp", "Value"]
+  }
+}

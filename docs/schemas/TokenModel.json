@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "TokenResponse",
+  "description": "Describing the response from /Token. Only the required properties are guaranteed to be present.",
+  "type": "object",
+  "properties": {
+    ".expires": {
+      "type": ["string", "null"]
+    },
+    ".issued": {
+      "type": ["string", "null"]
+    },
+    "access_token": {
+      "type": "string"
+    },
+    "expires_in": {
+      "type": "integer"
+    },
+    "token_type": {
+      "type": "string"
+    },
+    "userName": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["access_token", "expires_in", "token_type"]
+}

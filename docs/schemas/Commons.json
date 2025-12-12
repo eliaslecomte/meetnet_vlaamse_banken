@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Catalog",
+  "description": "Describing the Catalog from /V2/Catalog",
+  "definitions": {
+    "CustomerModel": {
+      "type": ["object", "null"],
+      "properties": {
+        "FullName": { "type": "string" },
+        "Login": {
+          "type": "string",
+          "format": "email"
+        }
+      },
+      "required": ["FullName", "Login"]
+    },
+    "LocationKey": {
+      "type": "string",
+      "pattern": "^[0-9A-Z]{3}$"
+    },
+    "ParameterKey": {
+      "type": "string",
+      "pattern": "^[0-9A-Z]{3}$"
+    },
+    "ParameterTypeKey": { "type": "integer" },
+    "LocationParameterKey": {
+      "type": "string",
+      "pattern": "^[0-9A-Z]{6}$"
+    }
+  }
+}
