@@ -181,15 +181,14 @@ class MeetnetVlaamseBankenConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         """Get the options flow for this handler."""
-        return MeetnetOptionsFlowHandler(config_entry)
+        return MeetnetOptionsFlowHandler()
 
 
 class MeetnetOptionsFlowHandler(OptionsFlow):
     """Handle options flow for Meetnet Vlaamse Banken."""
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(self) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
         self._locations: dict[str, str] = {}
 
     async def async_step_init(
